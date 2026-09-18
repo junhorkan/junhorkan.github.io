@@ -1,15 +1,13 @@
 // Shared header + footer, injected so there's one place to edit them.
 //
 // The site is a single scrolling page: the nav links are anchors into sections
-// of index.html, not separate documents. Post pages under writing/ are the one
-// exception — they're standalone, and their nav links point back at the
-// index's anchors.
+// of index.html, not separate documents. 404.html is the one standalone page,
+// and its nav links point back at the index's anchors.
 //
-// Each page declares <body data-page="..." data-root="./">; posts pass "../".
+// Each page declares <body data-page="..." data-root="./">.
 
 const SECTIONS = [
   ['projects', 'Projects'],
-  ['writing', 'Writing'],
   ['about', 'About'],
   ['contact', 'Contact'],
 ];
@@ -57,8 +55,8 @@ function buildHeader() {
     const a = el('a', null, text);
     a.href = (onIndex ? '' : root + 'index.html') + '#' + id;
     a.dataset.section = id;
-    // A post page belongs to Writing, and says so even though it can't
-    // participate in the scroll-spy below.
+    // A standalone page marks its own section, since it cannot take part in
+    // the scroll-spy below.
     if (!onIndex && page === id) a.setAttribute('aria-current', 'true');
     nav.appendChild(a);
   }

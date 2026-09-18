@@ -1,7 +1,7 @@
 # Jun Horkan — personal site · design document
 
 **Status:** built and verified locally. Not yet deployed.
-**Last updated:** 2026-09-18 (two-column layout for sections and entries)
+**Last updated:** 2026-09-18 (writing section removed)
 
 ---
 
@@ -24,12 +24,11 @@ artwork asset to produce or maintain.
 |---|---|
 | Hero subject | The four card suits ♠ ♥ ♦ ♣, laid out 2×2 |
 | Layout | **Single scrolling page.** The nav tabs are anchors into sections of `index.html`, not separate documents — modelled on [columbiasoftwaresolutions.com](https://www.columbiasoftwaresolutions.com/#cases) |
-| Sections | Hero, Projects, Writing, About, Contact |
+| Sections | Hero, Projects, About, Contact |
 | Projects data | Curated `data/projects.json` + live GitHub stats overlay |
 | Stack | Static HTML/CSS/JS. No framework, no build step for pages |
 | Page palette | Near-black `#0a0a0c`, text `#e8e8ea`, blue accent `#7dd3fc` for links |
 | Hero palette | Columbia-blue depth ramp on the near-black background: `#a8e0ff` → `#3f7fe8` → `#1b3b86` |
-| Writing | Markdown sources + a small zero-dependency **Python** build script |
 
 GitHub is `github.com/junhorkan` — 3 public repos (`got-poker` / Rust,
 `prizepicks-scraper` / Python, `yahtzee` / Python), none with descriptions or stars. This is
@@ -47,7 +46,7 @@ Kept here deliberately — each was a course correction worth remembering.
 | 2 | Hero went **greyscale**, then back to **blue** | Jun tried black→white, then asked for the Columbia-like colour back. Final: a three-stop blue ramp over the same near-black background. Each suit sits on its own slice of it so four clouds stay legible |
 | 3 | Suits laid out **2×2**, not in a row | A row left most of the stage empty and gave each suit ~12 cells; 2×2 roughly doubles the resolution at the same cell size |
 | 4 | Layout uses **measured ink boxes**, not advance widths | Glyph boxes carry heavy leading, which pushed the suits into the corners with a hole in the middle |
-| 5 | Post builder is **Python**, not Node | Node is not installed on this machine; Python 3.14 is. `python3 posts/build.py` |
+| 5 | Post builder was **Python**, not Node | Node is not installed on this machine; Python 3.14 is. *(Superseded by change 20 — the builder is gone.)* |
 | 6 | Depth normalised **per frame**, not against a constant | Yaw folds the x extent into z; a fixed range wasted most of the ramp and collapsed the render into two or three glyphs |
 | 7 | Yaw **oscillates ±0.34 rad** rather than spinning | A full spin turns the shapes into unreadable edges |
 | 8 | Assets carry a `?v=N` query | Browsers held stale CSS through hard reloads during the build. Bump N on deploy when CSS/JS changes |
@@ -62,6 +61,7 @@ Kept here deliberately — each was a course correction worth remembering.
 | 17 | Page widened to 1060px, prose held to 62ch | A two-column layout cannot breathe inside a 68ch column. The page is wide; the text blocks inside it are not |
 | 18 | Stack renders as **pills**, not an inline run | Taken from the reference site's own `/projects` page. It was the single biggest de-clutter — the eye can skip the row entirely |
 | 19 | Live GitHub language dropped from the stats row | Once the stack became pills, printing the language again read as "2026 · Rust · Rust" |
+| 20 | **Writing section removed** | Jun's call. The `#writing` band, its nav entry, `posts/` (the Markdown pipeline and the colophon post) and `writing/` all went with it — a build script and an orphan post page that nothing links to are dead weight. All recoverable from git history at `d79ea6b` |
 
 ---
 
@@ -76,9 +76,6 @@ assets/css/site.css     single stylesheet, design tokens on :root
 assets/js/ascii.js      the point-cloud hero (~420 lines, no dependencies)
 assets/js/projects.js   renders projects.json + GitHub stats overlay
 assets/js/nav.js        shared header/footer injection, active-link state
-posts/*.md              Markdown post sources
-posts/build.py          Markdown → HTML generator (python3, no pip install)
-writing/*.html          generated output (committed)
 .nojekyll               so GitHub Pages serves paths beginning with _
 .claude/launch.json     dev server config (python3 -m http.server 4173)
 ```
@@ -159,7 +156,7 @@ Sizing and hygiene, all of which were needed in practice:
 ## 2b. The scrolling layout — `index.html` + `nav.js`
 
 The site is one document. `index.html` holds `#stage` (the hero, a full `100svh`) followed by
-four `<section class="band">` elements: `#projects`, `#writing`, `#about`, `#contact`. The nav
+three `<section class="band">` elements: `#projects`, `#about`, `#contact`. The nav
 links are plain `#id` anchors, and `scroll-behavior: smooth` on `:root` does the animation —
 turned off under `prefers-reduced-motion`.
 
@@ -175,8 +172,7 @@ further. It reads geometry directly in a passive `scroll` listener — four
 `getBoundingClientRect` calls, no observer and no rAF, both of which produced real bugs here
 (see changes 11 and 12).
 
-Post pages under `writing/` remain standalone documents; their nav links point back at
-`../index.html#…` and they mark Writing as current.
+`404.html` is the only standalone page; its nav links point back at `../index.html#…`.
 
 ## 3. Projects — `data/projects.json` + `assets/js/projects.js`
 
@@ -208,20 +204,7 @@ Entry shape:
 
 Featured entries sort first, then by year. Layout is a list, not a card grid.
 
-## 4. Writing — `posts/build.py`
-
-Posts are Markdown with front matter (`title`, `date`, `summary`, `slug`, `draft`).
-`python3 posts/build.py` converts each to HTML, wraps it in the site shell, writes
-`writing/<slug>.html`, and regenerates the post list inside `index.html`'s `#writing` band,
-between `<!-- POSTS:START -->` / `<!-- POSTS:END -->`. `draft: true` is skipped. Re-running is
-idempotent (verified).
-
-No pip install: the Markdown subset — headings, paragraphs, bold/italic, inline and fenced
-code, links, lists, blockquotes, rules — is implemented directly in the script.
-
-Ships with one real post, `posts/colophon.md`, describing the hero pipeline.
-
-## 5. About / Contact
+## 4. About / Contact
 
 The `#about` band carries clearly-marked placeholder copy for Jun to replace — structure, not
 an invented biography. `#contact` lists the email (JS-assembled `mailto:`) and GitHub, with
@@ -238,12 +221,10 @@ commented-out rows for LinkedIn and X awaiting handles.
 | `prefers-reduced-motion` | Ink present, pixel-identical across 1.5s, **0** rAF calls in one second |
 | Projects, happy path | Live language / date on all three repos, no duplication |
 | Projects, GitHub unreachable | Full curated list renders; no spinner, no error banner |
-| `posts/build.py` | Generates `writing/colophon.html`, links it from the index, idempotent on re-run |
 | All pages + 404 | Render in the shell, nav active state correct |
-| Anchor jumps, desktop | All four land at exactly 84px, clearing the 71px header |
-| Anchor jumps, mobile | All four land at 94px, clearing the 85px wrapped header |
+| Anchor jumps, desktop | All land at exactly 84px, clearing the 71px header |
+| Anchor jumps, mobile | All land at 94px, clearing the 85px wrapped header |
 | Scroll-spy | Correct at every section, at the page bottom, and cleared over the hero |
-| Post page nav | Links resolve to `../index.html#…`; Writing marked current; back-link to `#writing` |
 | Stylesheet | Parses with all media queries live |
 | Two-column layout | Verified at 1280px (grid 299px / 705px), at 800px, and collapsed to one column at 375px |
 | Entry metadata | No duplicated language between the stack pills and the live stats row |
