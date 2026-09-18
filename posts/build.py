@@ -40,7 +40,7 @@ PAGE = """<!doctype html>
 <meta property="og:description" content="{summary}">
 <meta property="og:type" content="article">
 <link rel="icon" href="{favicon}">
-<link rel="stylesheet" href="../assets/css/site.css?v=14">
+<link rel="stylesheet" href="../assets/css/site.css?v=18">
 </head>
 <body data-page="writing" data-root="../">
   <main class="prose post-body">
@@ -49,7 +49,7 @@ PAGE = """<!doctype html>
 {body}
     <a class="back-link" href="../index.html#writing">&larr; All writing</a>
   </main>
-  <script src="../assets/js/nav.js?v=14"></script>
+  <script src="../assets/js/nav.js?v=18"></script>
 </body>
 </html>
 """
@@ -223,16 +223,21 @@ def main():
         for p in published:
             rows.append(
                 '        <li class="entry">\n'
-                '          <div class="entry-head">\n'
+                '          <div>\n'
                 '            <a class="entry-name" href="writing/{slug}.html">{title}</a>\n'
                 '            <span class="entry-year">{pretty}</span>\n'
                 '          </div>\n'
+                '          <div>\n'
                 '{summary}'
+                '            <div class="entry-links">'
+                '<a href="writing/{slug}.html">Read<span class="arrow">&rarr;</span></a>'
+                '</div>\n'
+                '          </div>\n'
                 '        </li>'.format(
                     slug=p["slug"],
                     title=html.escape(p["title"]),
                     pretty=html.escape(p["pretty"]),
-                    summary=('          <p class="entry-blurb">%s</p>\n' % html.escape(p["summary"]))
+                    summary=('            <p class="entry-blurb">%s</p>\n' % html.escape(p["summary"]))
                     if p["summary"] else "",
                 )
             )

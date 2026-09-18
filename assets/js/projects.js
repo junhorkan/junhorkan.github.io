@@ -27,43 +27,44 @@ function shortRepo(repo) {
 
 function renderEntry(p) {
   const li = el('li', 'entry' + (p.status === 'archived' ? ' status-archived' : ''));
-
-  const head = el('div', 'entry-head');
   const repoUrl = p.repo ? 'https://github.com/' + p.repo : (p.links && p.links.demo);
+
+  // Left column: the name, with the year and the live GitHub stats beneath it.
+  const left = el('div');
   const name = el(repoUrl ? 'a' : 'span', 'entry-name', p.name);
   if (repoUrl) { name.href = repoUrl; name.rel = 'noopener'; }
-  head.appendChild(name);
-  if (p.year) head.appendChild(el('span', 'entry-year', p.year));
-  li.appendChild(head);
+  left.appendChild(name);
 
-  if (p.blurb) li.appendChild(el('p', 'entry-blurb', p.blurb));
-
-  // Curated stack renders now; the live row is filled in later if GitHub answers.
   const meta = el('div', 'entry-meta');
   meta.dataset.repo = p.repo ? shortRepo(p.repo) : '';
-  meta.dataset.stack = (p.stack || []).join('|').toLowerCase();
-  if (p.stack && p.stack.length) meta.appendChild(el('span', null, p.stack.join(' / ')));
-  li.appendChild(meta);
+  if (p.year) meta.appendChild(el('span', null, p.year));
+  left.appendChild(meta);
+  li.appendChild(left);
+
+  // Right column: description, stack, then links.
+  const right = el('div');
+  if (p.blurb) right.appendChild(el('p', 'entry-blurb', p.blurb));
+
+  if (p.stack && p.stack.length) {
+    const stack = el('ul', 'stack');
+    for (const tech of p.stack) stack.appendChild(el('li', null, tech));
+    right.appendChild(stack);
+  }
 
   const links = el('div', 'entry-links');
-  if (p.repo) {
-    const a = el('a', null, 'Source');
-    a.href = 'https://github.com/' + p.repo;
-    a.rel = 'noopener';
+  const addLink = (text, href, external) => {
+    const a = el('a', null, text);
+    a.href = href;
+    if (external) a.rel = 'noopener';
+    a.appendChild(el('span', 'arrow', external ? '\u2197' : '\u2192'));
     links.appendChild(a);
-  }
-  if (p.links && p.links.demo) {
-    const a = el('a', null, 'Live');
-    a.href = p.links.demo; a.rel = 'noopener';
-    links.appendChild(a);
-  }
-  if (p.links && p.links.writeup) {
-    const a = el('a', null, 'Write-up');
-    a.href = p.links.writeup;
-    links.appendChild(a);
-  }
-  if (links.children.length) li.appendChild(links);
+  };
+  if (p.repo) addLink('Source', 'https://github.com/' + p.repo, true);
+  if (p.links && p.links.demo) addLink('Live', p.links.demo, true);
+  if (p.links && p.links.writeup) addLink('Write-up', p.links.writeup, false);
+  if (links.children.length) right.appendChild(links);
 
+  li.appendChild(right);
   return li;
 }
 
@@ -75,10 +76,8 @@ function applyStats(repos) {
 
     const live = el('span', 'live');
     const bits = [];
-    // Skip the language when the curated stack already names it — otherwise
-    // every single-language repo reads "RUST · RUST · UPDATED …".
-    const stack = (meta.dataset.stack || '').split('|').filter(Boolean);
-    if (r.language && !stack.includes(r.language.toLowerCase())) bits.push(r.language);
+    // The language is deliberately absent: it is already a pill in the stack
+    // column, and printing it here read as "2026 · Rust · Rust".
     if (r.stargazers_count > 0) bits.push('★ ' + r.stargazers_count);
     if (r.pushed_at) {
       const d = new Date(r.pushed_at);

@@ -25,7 +25,13 @@
 
   --gutter: 28px;
   --head-clear: 116px;  /* room under the fixed header */
-  --measure: 68ch;
+  --measure: 62ch;      /* prose only — the page itself is wider */
+  --page: 1060px;       /* outer column */
+
+  /* One split shared by the section headers and the entries, so the label
+     column and the content column line up all the way down the page. */
+  --split: minmax(0, 0.85fr) minmax(0, 2fr);
+  --split-gap: 56px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -141,7 +147,7 @@ button:focus-visible { outline: 1px solid var(--near); outline-offset: 3px; }
 main {
   padding: var(--head-clear) var(--gutter) 0;
   width: 100%;
-  max-width: calc(var(--measure) + 2 * var(--gutter));
+  max-width: calc(var(--page) + 2 * var(--gutter));
   margin: 0 auto;
 }
 
@@ -183,31 +189,47 @@ p { margin: 0 0 20px; max-width: var(--measure); }
 
 /* ---------- project + post lists ---------- */
 
+/* Name on the left, everything else on the right, on the same grid as the
+   section headers above. Roomy rows and a single hairline between them —
+   the previous stacked layout packed five things into one narrow column. */
+
 .entry-list { list-style: none; margin: 0; padding: 0; }
 
 .entry {
-  padding: 24px 0;
+  display: grid;
+  grid-template-columns: var(--split);
+  gap: 14px var(--split-gap);
+  align-items: start;
+  padding: 40px 0;
   border-top: 1px solid var(--rule);
 }
 .entry:last-child { border-bottom: 1px solid var(--rule); }
 
-.entry-head {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
 .entry-name {
-  font-size: 15px;
+  font-size: 19px;
   color: var(--text);
+  display: block;
+  line-height: 1.3;
+  letter-spacing: -.01em;
 }
 .entry-name:hover { color: var(--near); }
 
-.entry-year { font-size: 11px; letter-spacing: .12em; color: var(--muted); margin-left: auto; }
+.entry-year {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 
-.entry-blurb { margin: 8px 0 0; color: var(--text); max-width: var(--measure); }
+.entry-blurb {
+  margin: 0;
+  color: var(--text);
+  max-width: var(--measure);
+}
 
+/* Year and live GitHub stats, tucked under the name in the left column. */
 .entry-meta {
   margin-top: 10px;
   font-size: 11px;
@@ -218,40 +240,60 @@ p { margin: 0 0 20px; max-width: var(--measure); }
   flex-wrap: wrap;
   gap: 0 6px;
   align-items: center;
-  min-height: 1.4em;
 }
 .entry-meta .sep { opacity: .4; }
 .entry-meta .live { color: var(--mid); }
 
-.entry-links { margin-top: 10px; display: flex; gap: 18px; flex-wrap: wrap; }
+/* Stack as pills rather than a run of punctuation — the single biggest
+   de-clutter, and it lets the eye skip the row entirely. */
+.stack {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 20px 0 0;
+  padding: 0;
+}
+.stack li {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 11px;
+  letter-spacing: .04em;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* Links last, at the bottom of the row. */
+.entry-links { margin-top: 18px; display: flex; gap: 22px; flex-wrap: wrap; }
 .entry-links a {
   font-size: 11px;
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--near);
 }
-
-.status-dot {
-  display: inline-block;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--mid);
-  vertical-align: middle;
+.entry-links a .arrow { padding-left: 6px; }
+.entry-links a:hover .arrow { padding-left: 9px; }
+.entry-links a .arrow { transition: padding-left .15s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .entry-links a .arrow { transition: none; }
 }
-.status-archived .status-dot { background: var(--rule); }
 
-.empty { color: var(--muted); padding: 24px 0; border-top: 1px solid var(--rule); }
+.status-archived .entry-name { color: var(--muted); }
 
-/* ---------- links page ---------- */
+.empty { color: var(--muted); padding: 40px 0; border-top: 1px solid var(--rule); }
 
+/* ---------- contact rows ---------- */
+
+/* Same two columns as the entries above: label left, value right. */
 .link-rows { list-style: none; margin: 0; padding: 0; }
 .link-rows li {
-  padding: 18px 0;
-  border-top: 1px solid var(--rule);
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: var(--split);
+  gap: 6px var(--split-gap);
   align-items: baseline;
-  flex-wrap: wrap;
+  padding: 22px 0;
+  border-top: 1px solid var(--rule);
 }
 .link-rows li:last-child { border-bottom: 1px solid var(--rule); }
 .link-rows .k {
@@ -259,7 +301,6 @@ p { margin: 0 0 20px; max-width: var(--measure); }
   letter-spacing: .14em;
   text-transform: uppercase;
   color: var(--muted);
-  min-width: 92px;
 }
 .link-rows .v a { color: var(--near); }
 
@@ -321,14 +362,25 @@ main > .band:first-child { padding-top: var(--gutter); }
   margin: 0 0 14px;
 }
 
-.band-title {
-  font-size: 26px;
-  font-weight: 500;
-  letter-spacing: -.01em;
-  margin: 0 0 20px;
+/* Kicker + title on the left, the lede on the right — the same two columns
+   the entries below use, so everything sits on one grid. */
+.band-head {
+  display: grid;
+  grid-template-columns: var(--split);
+  gap: 12px var(--split-gap);
+  align-items: start;
+  margin-bottom: 64px;
 }
 
-.band-lede { color: var(--muted); margin-bottom: 32px; }
+.band-title {
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -.02em;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.band-lede { color: var(--muted); margin: 0; max-width: var(--measure); }
 
 .band:last-of-type { padding-bottom: 40px; }
 
@@ -369,13 +421,20 @@ main > .band:first-child { padding-top: var(--gutter); }
 
 /* ---------- responsive ---------- */
 
+@media (max-width: 900px) {
+  /* One column: the label sits above its content instead of beside it. */
+  :root { --split: minmax(0, 1fr); --split-gap: 0px; }
+  .band-head { gap: 16px; margin-bottom: 44px; }
+  .entry { gap: 16px; padding: 32px 0; }
+  .band-title { font-size: 26px; }
+}
+
 @media (max-width: 640px) {
   :root { --gutter: 20px; --head-clear: 104px; }
   /* The header wraps to two rows on narrow screens, so anchors need more
      clearance here, not less. */
   .band { padding-top: 72px; scroll-margin-top: 94px; }
-  .band-title { font-size: 22px; }
+  .band-title { font-size: 23px; }
+  .entry-name { font-size: 17px; }
   h1 { font-size: 22px; }
-  .entry-year { margin-left: 0; width: 100%; }
-  .link-rows .k { min-width: 0; width: 100%; }
 }

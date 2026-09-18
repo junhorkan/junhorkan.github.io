@@ -1,7 +1,7 @@
 # Jun Horkan — personal site · design document
 
 **Status:** built and verified locally. Not yet deployed.
-**Last updated:** 2026-09-18 (colour restored to the hero)
+**Last updated:** 2026-09-18 (two-column layout for sections and entries)
 
 ---
 
@@ -58,6 +58,10 @@ Kept here deliberately — each was a course correction worth remembering.
 | 13 | Responsive block moved to the end of the stylesheet | The new `.band` rules were appended after it, silently killing the mobile overrides at equal specificity |
 | 14 | Last band gets `min-height: calc(100svh - 150px)` | Without it the page ran out of scroll and the Contact anchor landed halfway down the viewport, which reads as a broken jump |
 | 15 | Hero palette is **three colour stops**, interpolated in RGB | Replaces the two-endpoint lightness scale. All three stops are in the blue family, so RGB interpolation has no hue to travel through and nothing goes muddy between them |
+| 16 | **Two-column layout** for section headers and entries | Jun found the stacked single column cluttered. Label left, content right — the rhythm from the reference site's "For students" band, on one shared grid so the columns align all the way down |
+| 17 | Page widened to 1060px, prose held to 62ch | A two-column layout cannot breathe inside a 68ch column. The page is wide; the text blocks inside it are not |
+| 18 | Stack renders as **pills**, not an inline run | Taken from the reference site's own `/projects` page. It was the single biggest de-clutter — the eye can skip the row entirely |
+| 19 | Live GitHub language dropped from the stats row | Once the stack became pills, printing the language again read as "2026 · Rust · Rust" |
 
 ---
 
@@ -89,12 +93,23 @@ Tokens on `:root`; no light mode (the site is dark by design).
 --bg #0a0a0c   --surface #131317   --text #e8e8ea   --muted #8b8b93
 --rule #26262c --near #7dd3fc      --mid #3b82f6    --far #1e3a8a
 --ascii-near #a8e0ff  --ascii-mid #3f7fe8  --ascii-far #1b3b86   (read by ascii.js)
+--page 1060px  --measure 62ch  --split (0.85fr 2fr)  --split-gap 56px
 --mono "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace
 ```
 
 Everything monospace. Nav and small labels are uppercase, `letter-spacing: .14em`, 11–12px.
-Body prose sits at 14px/1.75 in a 68ch column. Rules are 1px `--rule`; never boxes inside
-boxes. Links underline on hover only.
+Body prose sits at 14px/1.75, held to `--measure` (62ch) even though the page itself is
+1060px wide. Rules are 1px `--rule`; never boxes inside boxes. Links underline on hover only.
+
+**The grid.** `--split` defines one two-column ratio used by the section headers, the project
+and post entries, and the contact rows alike — so the label column and the content column
+line up the whole way down the page. It collapses to a single column under 900px, where the
+label simply sits above its content. Changing the proportion anywhere means editing that one
+token.
+
+Each entry is: **name and dates on the left**; **description, stack pills, then links on the
+right**. The stack renders as outlined pills rather than a run of dot-separated text, which is
+what stopped the rows reading as clutter.
 
 `nav.js` injects the header and footer on every page, so there is one place to edit them.
 The header is `position: fixed` and persists down the page, over a gradient backdrop so the
@@ -229,7 +244,9 @@ commented-out rows for LinkedIn and X awaiting handles.
 | Anchor jumps, mobile | All four land at 94px, clearing the 85px wrapped header |
 | Scroll-spy | Correct at every section, at the page bottom, and cleared over the hero |
 | Post page nav | Links resolve to `../index.html#…`; Writing marked current; back-link to `#writing` |
-| Stylesheet | Parses to 79 rules with all three media queries live |
+| Stylesheet | Parses with all media queries live |
+| Two-column layout | Verified at 1280px (grid 299px / 705px), at 800px, and collapsed to one column at 375px |
+| Entry metadata | No duplicated language between the stack pills and the live stats row |
 
 Run the site locally:
 
