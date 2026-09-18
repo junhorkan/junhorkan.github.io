@@ -262,9 +262,13 @@ Two things that were not obvious when setting this up:
   stylesheet and script tags in `index.html` and `404.html` whenever CSS or JS changes, or
   returning visitors keep the old copy.
 
-`/favicon.ico` returns 404 — the icon is a `data:` URI in a `<link rel="icon">`, which drives
-the tab icon correctly, but browsers still probe the legacy path. Cosmetic; add a real file at
-the root to silence it.
+A real `favicon.ico` sits at the repo root. The tab icon comes from a `data:` URI in
+`<link rel="icon">`, but browsers probe `/favicon.ico` regardless, and it was 404ing on the
+live site until the file existed. The console is now clean on a cold load.
+
+`assets/img/og.png` is the link preview — the actual hero, captured at 1200×630 and cropped to
+the suits. Without `og:image` the site shared as a bare text stub, which matters most on
+LinkedIn.
 
 ### Custom domain
 
