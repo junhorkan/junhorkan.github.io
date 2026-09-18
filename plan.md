@@ -1,7 +1,7 @@
 # Jun Horkan — personal site · design document
 
 **Status:** built and verified locally. Not yet deployed.
-**Last updated:** 2026-09-18 (single-page scroll layout)
+**Last updated:** 2026-09-18 (colour restored to the hero)
 
 ---
 
@@ -28,7 +28,7 @@ artwork asset to produce or maintain.
 | Projects data | Curated `data/projects.json` + live GitHub stats overlay |
 | Stack | Static HTML/CSS/JS. No framework, no build step for pages |
 | Page palette | Near-black `#0a0a0c`, text `#e8e8ea`, blue accent `#7dd3fc` for links |
-| Hero palette | Greyscale gradient, white at the front → near-black at the back |
+| Hero palette | Columbia-blue depth ramp on the near-black background: `#a8e0ff` → `#3f7fe8` → `#1b3b86` |
 | Writing | Markdown sources + a small zero-dependency **Python** build script |
 
 GitHub is `github.com/junhorkan` — 3 public repos (`got-poker` / Rust,
@@ -44,7 +44,7 @@ Kept here deliberately — each was a course correction worth remembering.
 | # | Change | Why |
 |---|---|---|
 | 1 | Hero draws **card suits**, not the name `JUN` | Jun's call mid-build; fits the poker/yahtzee projects far better than a wordmark |
-| 2 | Hero is **greyscale**, not the blue depth ramp | Jun's call; black→white gradients suit the theme. Each suit sits on its own slice of the ramp so four overlapping clouds stay legible |
+| 2 | Hero went **greyscale**, then back to **blue** | Jun tried black→white, then asked for the Columbia-like colour back. Final: a three-stop blue ramp over the same near-black background. Each suit sits on its own slice of it so four clouds stay legible |
 | 3 | Suits laid out **2×2**, not in a row | A row left most of the stage empty and gave each suit ~12 cells; 2×2 roughly doubles the resolution at the same cell size |
 | 4 | Layout uses **measured ink boxes**, not advance widths | Glyph boxes carry heavy leading, which pushed the suits into the corners with a hole in the middle |
 | 5 | Post builder is **Python**, not Node | Node is not installed on this machine; Python 3.14 is. `python3 posts/build.py` |
@@ -57,6 +57,7 @@ Kept here deliberately — each was a course correction worth remembering.
 | 12 | Scroll-spy paints synchronously, not via `requestAnimationFrame` | rAF is throttled in a hidden or backgrounded tab. An "already queued" guard around a frame that never arrives stopped the spy permanently |
 | 13 | Responsive block moved to the end of the stylesheet | The new `.band` rules were appended after it, silently killing the mobile overrides at equal specificity |
 | 14 | Last band gets `min-height: calc(100svh - 150px)` | Without it the page ran out of scroll and the Contact anchor landed halfway down the viewport, which reads as a broken jump |
+| 15 | Hero palette is **three colour stops**, interpolated in RGB | Replaces the two-endpoint lightness scale. All three stops are in the blue family, so RGB interpolation has no hue to travel through and nothing goes muddy between them |
 
 ---
 
@@ -87,7 +88,7 @@ Tokens on `:root`; no light mode (the site is dark by design).
 ```
 --bg #0a0a0c   --surface #131317   --text #e8e8ea   --muted #8b8b93
 --rule #26262c --near #7dd3fc      --mid #3b82f6    --far #1e3a8a
---ascii-hi 96%  --ascii-lo 22%     (hero gradient endpoints, read by ascii.js)
+--ascii-near #a8e0ff  --ascii-mid #3f7fe8  --ascii-far #1b3b86   (read by ascii.js)
 --mono "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace
 ```
 
@@ -99,10 +100,6 @@ boxes. Links underline on hover only.
 The header is `position: fixed` and persists down the page, over a gradient backdrop so the
 hero can run underneath it. The footer email is assembled in JS from split user/host strings,
 so it is not sitting in the HTML as one scrapable address.
-
-**Open question for Jun:** links and the live GitHub stats are still blue (`--near`) while
-the hero is now greyscale. Switching those to white/grey is a two-token edit if a fully
-monochrome site is wanted.
 
 ## 2. The ASCII hero — `assets/js/ascii.js`
 
@@ -123,9 +120,9 @@ footer.
    perspective divide at camera distance 120 grid units → z-buffer into 12px character cells,
    nearest point per cell wins.
 6. **Paint.** Depth normalised against the frame's real min/max. The nearest 44% draws each
-   particle's own suit; the rest steps through `{ } < > 1 0 ; : ·`. Colour is a 7-step
-   greyscale ramp between `--ascii-hi` and `--ascii-lo`, with a per-suit lightness factor.
-   Cells are bucketed by (suit, shade), so `fillStyle` changes ~28 times a frame, not ~2000.
+   particle's own suit; the rest steps through `{ } < > 1 0 ; : ·`. Colour is a 7-step ramp
+   interpolated across the three `--ascii-*` stops, with a per-suit lightness factor. Cells are
+   bucketed by (suit, shade), so `fillStyle` changes ~28 times a frame, not ~2000.
 7. **Hover.** Cells within 120px of the cursor are shoved outward with hashed jitter and
    spring back. Fine pointers only.
 
@@ -257,5 +254,4 @@ Analytics, a CMS, a contact form, light mode, a custom domain.
 1. Replace the `TODO` blurbs in `data/projects.json` with real descriptions.
 2. Replace the placeholder copy in `about.html`.
 3. Add LinkedIn / X handles to `contact.html` (rows are commented out).
-4. Decide whether links should go greyscale to match the now-monochrome hero.
-5. Confirm the footer should publish the email address in plain text.
+4. Confirm the footer should publish the email address in plain text.

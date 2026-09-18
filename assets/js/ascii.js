@@ -1,9 +1,9 @@
-// JUN — ASCII point-cloud wordmark.
+// Card suits — ASCII point cloud.
 //
-// Pipeline: render the word to an offscreen canvas → sample its alpha into a
+// Pipeline: render the suits to an offscreen canvas → sample their alpha into a
 // grid → extrude that grid into a hollow 3D point cloud → disperse/assemble
 // intro → oscillating yaw → perspective projection → z-buffer at character-cell
-// resolution → glyph density ramp, colored by depth tier.
+// resolution → glyph density ramp, coloured by depth.
 //
 // Everything below works in *grid units*: one unit is one character cell, so
 // the sampling step and the projection scale stay consistent at any viewport.
@@ -16,9 +16,9 @@ const CELL_FINE = 12;      // character cell, px (pointer: fine)
 const CELL_COARSE = 14;    // fewer cells on touch devices
 const DEPTH = 9;           // half-depth of the extrusion, grid units
 const CAM = 120;           // camera distance, grid units — far enough that the
-                           // near edge doesn't balloon and JUN stays readable
+                           // near edge doesn't balloon and the suits stay readable
 const YAW = 0.34;          // yaw amplitude, rad. Oscillates rather than spinning —
-                           // a full spin turns the name into an unreadable edge
+                           // a full spin turns the suits into unreadable edges
 const YAW_PERIOD = 15000;  // ms per full oscillation
 const PITCH = 0.1;         // small x wobble so it never looks like a flat card
 const PITCH_PERIOD = 9000;
@@ -40,28 +40,47 @@ const ctx = canvas.getContext('2d');
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const coarse = matchMedia('(pointer: coarse)');
 
-// Depth is painted as a greyscale gradient, quantised into SHADES steps —
+// Depth is painted as a colour gradient running from Columbia blue at the
+// nearest surface to deep navy at the furthest, quantised into SHADES steps —
 // enough to read as a gradient rather than as bands, few enough that fillStyle
 // changes a couple of dozen times a frame instead of a couple of thousand.
 const SHADES = 7;
-// Each suit sits on its own slice of the ramp, so four overlapping clouds stay
-// legible as four shapes rather than merging into one grey mass.
-const SUIT_LIGHTNESS = [1.0, 0.88, 0.96, 0.82];
+// Each suit sits on its own slice of the ramp, so four clouds stay legible as
+// four shapes rather than merging into one field of blue.
+const SUIT_LIGHTNESS = [1.0, 0.9, 0.97, 0.85];
 
 const css = getComputedStyle(document.documentElement);
-const parsePct = (v, fallback) => {
-  const n = parseFloat(css.getPropertyValue(v));
-  return Number.isFinite(n) ? n : fallback;
-};
-const L_HI = parsePct('--ascii-hi', 96);
-const L_LO = parsePct('--ascii-lo', 22);
+
+// Interpolating in RGB is fine here: all three stops are in the blue family, so
+// there is no hue to travel through and nothing goes muddy in between.
+function readRGB(name, fallback) {
+  const v = (css.getPropertyValue(name) || '').trim() || fallback;
+  const m = /^#?([0-9a-f]{6})$/i.exec(v);
+  const n = parseInt(m ? m[1] : fallback.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+const STOPS = [
+  readRGB('--ascii-near', '#a8e0ff'),
+  readRGB('--ascii-mid', '#3f7fe8'),
+  readRGB('--ascii-far', '#1b3b86'),
+];
+
+const mix = (a, b, t) => a + (b - a) * t;
 
 // [suit][shade] → css color, built once.
 const PALETTE = SUIT_LIGHTNESS.map((factor) =>
-  Array.from({ length: SHADES }, (_, s) => {
-    const t = SHADES === 1 ? 0 : s / (SHADES - 1);
-    const l = (L_HI + (L_LO - L_HI) * t) * factor;
-    return `hsl(240 4% ${l.toFixed(1)}%)`;
+  Array.from({ length: SHADES }, (_, i) => {
+    const t = SHADES === 1 ? 0 : i / (SHADES - 1);
+    // Two segments: near → mid → far.
+    const seg = t < 0.5 ? 0 : 1;
+    const u = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+    const a = STOPS[seg];
+    const b = STOPS[seg + 1];
+    const rgb = [0, 1, 2].map((k) =>
+      Math.round(Math.min(255, mix(a[k], b[k], u) * factor))
+    );
+    return `rgb(${rgb[0]} ${rgb[1]} ${rgb[2]})`;
   })
 );
 
@@ -159,7 +178,7 @@ function sampleWord(targetCols) {
 
   if (minR === Infinity) return null; // font never painted — bail to fallback
 
-  // Crop to ink so the wordmark is centred on its own bounds, not the canvas'.
+  // Crop to ink so the block is centred on its own bounds, not the canvas'.
   const cropped = [];
   const croppedOwner = [];
   for (let r = minR; r <= maxR; r++) {
@@ -315,7 +334,7 @@ function draw(now) {
   const elapsed = now - start;
   const still = reduceMotion.matches;
 
-  // Intro: tight blob → dispersed debris → assembled wordmark.
+  // Intro: tight blob → dispersed debris → assembled suits.
   const disperse = still ? 1 : smooth(elapsed / (HOLD_MS * 0.55));
   const assemble = still ? 1 : easeOutCubic(clamp01((elapsed - HOLD_MS) / ASSEMBLE_MS));
 
@@ -330,7 +349,7 @@ function draw(now) {
   zpoint.fill(-1);
 
   // Track the frame's real depth range. Normalising against a fixed constant
-  // wastes most of the ramp once yaw pushes x into z — the wordmark ends up
+  // wastes most of the ramp once yaw pushes x into z — the suits end up
   // shaded almost entirely by two or three glyphs.
   let zmin = Infinity, zmax = -Infinity;
 

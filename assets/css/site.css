@@ -13,11 +13,13 @@
   --mid: #3b82f6;
   --far: #1e3a8a;
 
-  /* ASCII depth gradient — greyscale, nearest surface to furthest.
-     ascii.js reads these two endpoints and interpolates between them. */
-  --ascii-hi: 96%;  /* lightness of the nearest cells */
-  --ascii-lo: 22%;  /* lightness of the furthest — above the background, or
-                       the back of each suit disappears entirely */
+  /* ASCII depth gradient — three stops, nearest surface to furthest.
+     ascii.js reads these and interpolates between them. Columbia blue at the
+     front, falling away through royal to a deep navy that still sits clearly
+     above the background — any darker and the back of each suit vanishes. */
+  --ascii-near: #a8e0ff;
+  --ascii-mid:  #3f7fe8;
+  --ascii-far:  #1b3b86;
 
   --mono: "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 

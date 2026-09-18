@@ -40,7 +40,7 @@ PAGE = """<!doctype html>
 <meta property="og:description" content="{summary}">
 <meta property="og:type" content="article">
 <link rel="icon" href="{favicon}">
-<link rel="stylesheet" href="../assets/css/site.css?v=13">
+<link rel="stylesheet" href="../assets/css/site.css?v=14">
 </head>
 <body data-page="writing" data-root="../">
   <main class="prose post-body">
@@ -49,7 +49,7 @@ PAGE = """<!doctype html>
 {body}
     <a class="back-link" href="../index.html#writing">&larr; All writing</a>
   </main>
-  <script src="../assets/js/nav.js?v=13"></script>
+  <script src="../assets/js/nav.js?v=14"></script>
 </body>
 </html>
 """
