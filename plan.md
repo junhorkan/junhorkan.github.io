@@ -1,7 +1,7 @@
 # Jun Horkan — personal site · design document
 
 **Status:** built and verified locally. Not yet deployed.
-**Last updated:** 2026-09-18
+**Last updated:** 2026-09-18 (single-page scroll layout)
 
 ---
 
@@ -23,7 +23,8 @@ artwork asset to produce or maintain.
 | | |
 |---|---|
 | Hero subject | The four card suits ♠ ♥ ♦ ♣, laid out 2×2 |
-| Pages | Home, Projects, About, Writing, Contact |
+| Layout | **Single scrolling page.** The nav tabs are anchors into sections of `index.html`, not separate documents — modelled on [columbiasoftwaresolutions.com](https://www.columbiasoftwaresolutions.com/#cases) |
+| Sections | Hero, Projects, Writing, About, Contact |
 | Projects data | Curated `data/projects.json` + live GitHub stats overlay |
 | Stack | Static HTML/CSS/JS. No framework, no build step for pages |
 | Page palette | Near-black `#0a0a0c`, text `#e8e8ea`, blue accent `#7dd3fc` for links |
@@ -51,17 +52,18 @@ Kept here deliberately — each was a course correction worth remembering.
 | 7 | Yaw **oscillates ±0.34 rad** rather than spinning | A full spin turns the shapes into unreadable edges |
 | 8 | Assets carry a `?v=N` query | Browsers held stale CSS through hard reloads during the build. Bump N on deploy when CSS/JS changes |
 | 9 | Colophon post rewritten | It described the old name-based blue hero, which no longer existed. Shipped content must not be stale |
+| 10 | **Folded to one scrolling page** | Jun's call. `projects.html`, `writing.html`, `about.html` and `contact.html` were deleted and their content became `<section>` bands in `index.html`. Keeping both would have meant two copies of every piece of content |
+| 11 | Scroll-spy reads geometry, not `IntersectionObserver` | IO only fires on threshold crossings; a fast jump down the page left its cached state stale, so sections silently never highlighted |
+| 12 | Scroll-spy paints synchronously, not via `requestAnimationFrame` | rAF is throttled in a hidden or backgrounded tab. An "already queued" guard around a frame that never arrives stopped the spy permanently |
+| 13 | Responsive block moved to the end of the stylesheet | The new `.band` rules were appended after it, silently killing the mobile overrides at equal specificity |
+| 14 | Last band gets `min-height: calc(100svh - 150px)` | Without it the page ran out of scroll and the Contact anchor landed halfway down the viewport, which reads as a broken jump |
 
 ---
 
 ## File layout
 
 ```
-index.html              hero — the ASCII suits + nav
-projects.html
-writing.html            post index (list block is generated)
-about.html
-contact.html
+index.html              the whole site: hero + all four sections
 404.html
 plan.md                 this document
 data/projects.json      curated project entries — the file Jun edits most
@@ -94,9 +96,9 @@ Body prose sits at 14px/1.75 in a 68ch column. Rules are 1px `--rule`; never box
 boxes. Links underline on hover only.
 
 `nav.js` injects the header and footer on every page, so there is one place to edit them.
-Home stacks the nav under the wordmark; interior pages run it inline-right. The footer email
-is assembled in JS from split user/host strings, so it is not sitting in the HTML as one
-scrapable address.
+The header is `position: fixed` and persists down the page, over a gradient backdrop so the
+hero can run underneath it. The footer email is assembled in JS from split user/host strings,
+so it is not sitting in the HTML as one scrapable address.
 
 **Open question for Jun:** links and the live GitHub stats are still blue (`--near`) while
 the hero is now greyscale. Switching those to white/grey is a two-token edit if a fully
@@ -142,6 +144,28 @@ Sizing and hygiene, all of which were needed in practice:
 - `prefers-reduced-motion: reduce` paints one static assembled frame and never starts the
   loop.
 
+## 2b. The scrolling layout — `index.html` + `nav.js`
+
+The site is one document. `index.html` holds `#stage` (the hero, a full `100svh`) followed by
+four `<section class="band">` elements: `#projects`, `#writing`, `#about`, `#contact`. The nav
+links are plain `#id` anchors, and `scroll-behavior: smooth` on `:root` does the animation —
+turned off under `prefers-reduced-motion`.
+
+Anchors land correctly because each band carries `scroll-margin-top` (84px desktop, 94px
+mobile where the header wraps to two rows), which is the one thing a fixed header always
+breaks. Each section also opens with a numbered kicker — `01 — WORK` — so position is legible
+even without the nav.
+
+**Scroll-spy.** The nav marks the section you are actually in, so it doubles as a position
+indicator. The active section is the last one whose top edge has risen past an anchor line at
+35% of the viewport, with an explicit claim for the final section once the page can scroll no
+further. It reads geometry directly in a passive `scroll` listener — four
+`getBoundingClientRect` calls, no observer and no rAF, both of which produced real bugs here
+(see changes 11 and 12).
+
+Post pages under `writing/` remain standalone documents; their nav links point back at
+`../index.html#…` and they mark Writing as current.
+
 ## 3. Projects — `data/projects.json` + `assets/js/projects.js`
 
 Curated entries render immediately; **one** `GET /users/junhorkan/repos?per_page=100` then
@@ -176,8 +200,8 @@ Featured entries sort first, then by year. Layout is a list, not a card grid.
 
 Posts are Markdown with front matter (`title`, `date`, `summary`, `slug`, `draft`).
 `python3 posts/build.py` converts each to HTML, wraps it in the site shell, writes
-`writing/<slug>.html`, and regenerates the index list in `writing.html` between
-`<!-- POSTS:START -->` / `<!-- POSTS:END -->`. `draft: true` is skipped. Re-running is
+`writing/<slug>.html`, and regenerates the post list inside `index.html`'s `#writing` band,
+between `<!-- POSTS:START -->` / `<!-- POSTS:END -->`. `draft: true` is skipped. Re-running is
 idempotent (verified).
 
 No pip install: the Markdown subset — headings, paragraphs, bold/italic, inline and fenced
@@ -187,8 +211,8 @@ Ships with one real post, `posts/colophon.md`, describing the hero pipeline.
 
 ## 5. About / Contact
 
-`about.html` carries clearly-marked placeholder copy for Jun to replace — structure, not an
-invented biography. `contact.html` lists the email (JS-assembled `mailto:`) and GitHub, with
+The `#about` band carries clearly-marked placeholder copy for Jun to replace — structure, not
+an invented biography. `#contact` lists the email (JS-assembled `mailto:`) and GitHub, with
 commented-out rows for LinkedIn and X awaiting handles.
 
 ---
@@ -204,6 +228,11 @@ commented-out rows for LinkedIn and X awaiting handles.
 | Projects, GitHub unreachable | Full curated list renders; no spinner, no error banner |
 | `posts/build.py` | Generates `writing/colophon.html`, links it from the index, idempotent on re-run |
 | All pages + 404 | Render in the shell, nav active state correct |
+| Anchor jumps, desktop | All four land at exactly 84px, clearing the 71px header |
+| Anchor jumps, mobile | All four land at 94px, clearing the 85px wrapped header |
+| Scroll-spy | Correct at every section, at the page bottom, and cleared over the hero |
+| Post page nav | Links resolve to `../index.html#…`; Writing marked current; back-link to `#writing` |
+| Stylesheet | Parses to 79 rules with all three media queries live |
 
 Run the site locally:
 

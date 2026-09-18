@@ -6,7 +6,7 @@
 // stats — never a spinner, never an error banner.
 
 const ROOT = document.body.dataset.root || './';
-const mount = document.getElementById('projects');
+const mount = document.getElementById('projects-list');
 const CACHE_KEY = 'gh-repos';
 const CACHE_MS = 10 * 60 * 1000;
 

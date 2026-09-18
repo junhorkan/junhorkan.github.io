@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build writing/*.html from posts/*.md, and regenerate the index in writing.html.
+"""Build writing/*.html from posts/*.md, and regenerate the list in index.html.
 
 Run it from anywhere:  python3 posts/build.py
 
@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 POSTS_DIR = ROOT / "posts"
 OUT_DIR = ROOT / "writing"
-INDEX = ROOT / "writing.html"
+INDEX = ROOT / "index.html"   # the single page; posts list into its #writing band
 
 START = "<!-- POSTS:START -->"
 END = "<!-- POSTS:END -->"
@@ -40,16 +40,16 @@ PAGE = """<!doctype html>
 <meta property="og:description" content="{summary}">
 <meta property="og:type" content="article">
 <link rel="icon" href="{favicon}">
-<link rel="stylesheet" href="../assets/css/site.css?v=8">
+<link rel="stylesheet" href="../assets/css/site.css?v=13">
 </head>
 <body data-page="writing" data-root="../">
   <main class="prose post-body">
     <h1>{title}</h1>
     <p class="post-date">{datestr}</p>
 {body}
-    <a class="back-link" href="../writing.html">&larr; All writing</a>
+    <a class="back-link" href="../index.html#writing">&larr; All writing</a>
   </main>
-  <script src="../assets/js/nav.js?v=8"></script>
+  <script src="../assets/js/nav.js?v=13"></script>
 </body>
 </html>
 """
@@ -217,7 +217,7 @@ def main():
 
     published.sort(key=lambda p: str(p["date"]), reverse=True)
 
-    # Rebuild the index block in writing.html, between the markers.
+    # Rebuild the post list inside index.html's #writing band.
     if published:
         rows = []
         for p in published:
@@ -243,7 +243,7 @@ def main():
     index_html = INDEX.read_text(encoding="utf-8")
     pattern = re.compile(re.escape(START) + r".*?" + re.escape(END), re.S)
     if not pattern.search(index_html):
-        sys.exit("markers %s / %s not found in writing.html" % (START, END))
+        sys.exit("markers %s / %s not found in index.html" % (START, END))
     INDEX.write_text(
         pattern.sub(lambda _: START + "\n" + block + "\n      " + END, index_html),
         encoding="utf-8",

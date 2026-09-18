@@ -22,12 +22,19 @@
   --mono: "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
   --gutter: 28px;
+  --head-clear: 116px;  /* room under the fixed header */
   --measure: 68ch;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
 
 body {
   margin: 0;
@@ -57,7 +64,12 @@ button:focus-visible { outline: 1px solid var(--near); outline-offset: 3px; }
 }
 
 .site-head {
-  padding: var(--gutter) var(--gutter) 0;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 10;
+  padding: var(--gutter) var(--gutter) calc(var(--gutter) * 0.7);
+  /* The hero runs under the header, so it needs its own backdrop. */
+  background: linear-gradient(var(--bg) 62%, transparent);
   display: flex;
   flex-wrap: wrap;
   gap: 8px 28px;
@@ -85,13 +97,16 @@ button:focus-visible { outline: 1px solid var(--near); outline-offset: 3px; }
   color: var(--muted);
 }
 .site-nav a:hover { color: var(--near); }
-.site-nav a[aria-current="page"] { color: var(--text); }
-
-/* Home lays the nav out under the wordmark, like a terminal header block. */
-.site-head[data-layout="stacked"] {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
+.site-nav a[aria-current] { color: var(--text); }
+/* A short rule under the current section's link — the nav doubles as a
+   position indicator as you scroll. */
+.site-nav a { position: relative; padding-bottom: 3px; }
+.site-nav a[aria-current]::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1px;
+  background: currentColor;
 }
 
 .site-foot {
@@ -109,9 +124,9 @@ button:focus-visible { outline: 1px solid var(--near); outline-offset: 3px; }
 /* ---------- hero ---------- */
 
 #stage {
-  flex: 1;
   position: relative;
-  min-height: 60vh;
+  height: 100vh;
+  height: 100svh;
   overflow: hidden;
 }
 /* Absolute, so the canvas box comes from #stage. With `height: 100%` the
@@ -122,7 +137,7 @@ button:focus-visible { outline: 1px solid var(--near); outline-offset: 3px; }
 /* ---------- interior pages ---------- */
 
 main {
-  padding: 64px var(--gutter) 0;
+  padding: var(--head-clear) var(--gutter) 0;
   width: 100%;
   max-width: calc(var(--measure) + 2 * var(--gutter));
   margin: 0 auto;
@@ -284,11 +299,80 @@ p { margin: 0 0 20px; max-width: var(--measure); }
 
 .back-link { display: inline-block; margin-top: 56px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 
+/* ---------- scrolling sections (single-page layout) ---------- */
+
+/* Anchor jumps land below the fixed header, not underneath it. */
+.band { scroll-margin-top: 84px; }
+
+.band {
+  padding: 96px 0 8px;
+  border-top: 1px solid var(--rule);
+}
+.band:first-child { border-top: 0; }
+main > .band:first-child { padding-top: var(--gutter); }
+
+.section-kicker {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
+.band-title {
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  margin: 0 0 20px;
+}
+
+.band-lede { color: var(--muted); margin-bottom: 32px; }
+
+.band:last-of-type { padding-bottom: 40px; }
+
+/* The last section gets a full screen of its own, so it can scroll up to the
+   header like every other one. Without this the page runs out of scroll and the
+   final anchor lands halfway down, which reads as a broken jump. */
+.band:last-of-type {
+  min-height: calc(100svh - 150px);
+}
+
+/* ---------- hero scroll cue ---------- */
+
+.scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  z-index: 2;
+}
+.scroll-cue:hover { color: var(--text); text-decoration: none; }
+.scroll-cue-arrow { animation: cue-drift 2.4s ease-in-out infinite; }
+
+@keyframes cue-drift {
+  0%, 100% { transform: translateY(0); opacity: .55; }
+  50%      { transform: translateY(4px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue-arrow { animation: none; opacity: .8; }
+}
+
 /* ---------- responsive ---------- */
 
 @media (max-width: 640px) {
-  :root { --gutter: 20px; }
-  main { padding-top: 44px; }
+  :root { --gutter: 20px; --head-clear: 104px; }
+  /* The header wraps to two rows on narrow screens, so anchors need more
+     clearance here, not less. */
+  .band { padding-top: 72px; scroll-margin-top: 94px; }
+  .band-title { font-size: 22px; }
   h1 { font-size: 22px; }
   .entry-year { margin-left: 0; width: 100%; }
   .link-rows .k { min-width: 0; width: 100%; }
