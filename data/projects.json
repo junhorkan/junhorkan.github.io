@@ -2,34 +2,49 @@
   "githubUser": "junhorkan",
   "projects": [
     {
-      "name": "got-poker",
+      "name": "GTO Poker Engine",
       "repo": "junhorkan/got-poker",
-      "blurb": "A Rust GTO engine for preflop and postflop decisions: hand evaluation, range and equity, pot odds, and a discounted CFR preflop solver. Ships a terminal lookup for 6–9 players that returns bet sizing and the mix of call, raise, and fold.",
-      "stack": ["Rust"],
+      "blurb": "A Rust GTO engine for preflop and postflop decisions: hand evaluation, range and equity, pot odds, and a discounted CFR preflop solver. Ships a terminal lookup for 6\u20139 players that returns bet sizing and the mix of call, raise, and fold.",
+      "stack": [
+        "Rust"
+      ],
       "year": "2026",
       "status": "active",
       "featured": true,
-      "links": { "demo": null, "writeup": null }
+      "links": {
+        "demo": null,
+        "writeup": null
+      }
     },
     {
-      "name": "prizepicks-scraper",
+      "name": "PrizePicks Scraper",
       "repo": "junhorkan/prizepicks-scraper",
       "blurb": "A Python pipeline for PrizePicks CS2 projections. An Apify actor does the scrape; this repo handles the API, normalization, caching, and an optional join with BallDontLie player history for exploratory scoring.",
-      "stack": ["Python"],
+      "stack": [
+        "Python"
+      ],
       "year": "2026",
       "status": "active",
       "featured": true,
-      "links": { "demo": null, "writeup": null }
+      "links": {
+        "demo": null,
+        "writeup": null
+      }
     },
     {
-      "name": "yahtzee",
+      "name": "Yahtzee",
       "repo": "junhorkan/yahtzee",
       "blurb": "A single-player desktop Yahtzee in Python with Zelle graphics. Three rolls a turn, click-to-hold dice, and a live scorecard across the 13 categories with the 35-point upper bonus at 63.",
-      "stack": ["Python"],
+      "stack": [
+        "Python"
+      ],
       "year": "2026",
       "status": "active",
       "featured": false,
-      "links": { "demo": null, "writeup": null }
+      "links": {
+        "demo": null,
+        "writeup": null
+      }
     }
   ]
 }
