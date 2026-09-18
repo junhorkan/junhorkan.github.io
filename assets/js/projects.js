@@ -1,6 +1,6 @@
 // Projects list: curated entries from data/projects.json render immediately,
 // then a single GitHub request overlays live stars / last-pushed and re-sorts
-// by recency.
+// the list — featured entries first, then by recency.
 //
 // The curated list is the source of truth. If GitHub is rate-limited (60/hr
 // unauthenticated) or unreachable, the page looks the same minus the live
@@ -29,6 +29,11 @@ function shortRepo(repo) {
 function renderEntry(p) {
   const li = el('li', 'entry' + (p.status === 'archived' ? ' status-archived' : ''));
   const repoUrl = p.repo ? 'https://github.com/' + p.repo : (p.links && p.links.demo);
+
+  // Curated ordering, kept on the element so the post-fetch re-sort can respect
+  // it rather than discarding it.
+  li.dataset.featured = p.featured ? '1' : '0';
+  li.dataset.year = p.year || '';
 
   // Left column: the name, with the year and the live GitHub stats beneath it.
   const left = el('div');
@@ -93,10 +98,27 @@ function applyStats(repos) {
   }
 }
 
-function reorderByPushed() {
+// Re-sort once GitHub answers. Featured entries stay on top — sorting purely by
+// push date silently made `featured` do nothing, and left the order different
+// depending on whether the API happened to respond.
+//
+// Entries GitHub knows nothing about (no repo, a private one, a rename) fall
+// back to their curated year rather than sinking to the bottom.
+function reorderEntries() {
+  const recency = (li) => li.dataset.pushed || li.dataset.year || '';
   const items = [...mount.children];
-  items.sort((a, b) => (b.dataset.pushed || '').localeCompare(a.dataset.pushed || ''));
-  mount.append(...items);
+
+  const sorted = items.slice().sort((a, b) => {
+    const fa = a.dataset.featured === '1' ? 1 : 0;
+    const fb = b.dataset.featured === '1' ? 1 : 0;
+    if (fa !== fb) return fb - fa;
+    return recency(b).localeCompare(recency(a));
+  });
+
+  // Don't touch the DOM when nothing moved — the common case, and re-appending
+  // makes the list visibly jump after the network call returns.
+  if (sorted.every((li, i) => li === items[i])) return;
+  mount.append(...sorted);
 }
 
 function cached() {
@@ -155,7 +177,7 @@ async function main() {
   // Live stats are a bonus layer; a failure here leaves the curated page intact.
   try {
     applyStats(await fetchRepos(data.githubUser || 'junhorkan'));
-    reorderByPushed();
+    reorderEntries();
   } catch (err) {
     console.info('GitHub stats unavailable:', err.message);
   }
