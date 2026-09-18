@@ -1,0 +1,35 @@
+{
+  "githubUser": "junhorkan",
+  "projects": [
+    {
+      "name": "got-poker",
+      "repo": "junhorkan/got-poker",
+      "blurb": "TODO — a sentence or two on what this does and why you built it. Rust poker engine: hand evaluation, betting rounds, whatever the interesting part turned out to be.",
+      "stack": ["Rust"],
+      "year": "2026",
+      "status": "active",
+      "featured": true,
+      "links": { "demo": null, "writeup": null }
+    },
+    {
+      "name": "prizepicks-scraper",
+      "repo": "junhorkan/prizepicks-scraper",
+      "blurb": "TODO — what it scrapes, what you do with the data, and the part that was harder than expected.",
+      "stack": ["Python"],
+      "year": "2026",
+      "status": "active",
+      "featured": true,
+      "links": { "demo": null, "writeup": null }
+    },
+    {
+      "name": "yahtzee",
+      "repo": "junhorkan/yahtzee",
+      "blurb": "TODO — the game, plus whatever you were actually exploring underneath it (scoring logic, optimal play, a CLI you liked building).",
+      "stack": ["Python"],
+      "year": "2026",
+      "status": "active",
+      "featured": false,
+      "links": { "demo": null, "writeup": null }
+    }
+  ]
+}

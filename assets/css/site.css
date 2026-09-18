@@ -1,0 +1,295 @@
+/* Jun Horkan — personal site
+   One stylesheet. Tokens on :root, monospace throughout, dark by design. */
+
+:root {
+  --bg: #0a0a0c;
+  --surface: #131317;
+  --text: #e8e8ea;
+  --muted: #8b8b93;
+  --rule: #26262c;
+
+  /* Link / accent colors */
+  --near: #7dd3fc;
+  --mid: #3b82f6;
+  --far: #1e3a8a;
+
+  /* ASCII depth gradient — greyscale, nearest surface to furthest.
+     ascii.js reads these two endpoints and interpolates between them. */
+  --ascii-hi: 96%;  /* lightness of the nearest cells */
+  --ascii-lo: 22%;  /* lightness of the furthest — above the background, or
+                       the back of each suit disappears entirely */
+
+  --mono: "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --gutter: 28px;
+  --measure: 68ch;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--near); text-decoration: underline; text-underline-offset: 3px; }
+a:focus-visible,
+button:focus-visible { outline: 1px solid var(--near); outline-offset: 3px; }
+
+/* ---------- shared chrome ---------- */
+
+.label {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.site-head {
+  padding: var(--gutter) var(--gutter) 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.wordmark {
+  font-size: 12px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.wordmark:hover { text-decoration: none; color: var(--near); }
+
+.site-nav {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+.site-nav a {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.site-nav a:hover { color: var(--near); }
+.site-nav a[aria-current="page"] { color: var(--text); }
+
+/* Home lays the nav out under the wordmark, like a terminal header block. */
+.site-head[data-layout="stacked"] {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.site-foot {
+  margin-top: auto;
+  padding: 48px var(--gutter) var(--gutter);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.site-foot .sep { opacity: .45; padding: 0 2px; }
+/* Let the footer wrap between items, never through a name or an address. */
+.site-foot .nowrap, .site-foot a { white-space: nowrap; }
+
+/* ---------- hero ---------- */
+
+#stage {
+  flex: 1;
+  position: relative;
+  min-height: 60vh;
+  overflow: hidden;
+}
+/* Absolute, so the canvas box comes from #stage. With `height: 100%` the
+   canvas falls back to its own width/height attributes — which this script
+   sets from the measured box, producing a sizing feedback loop. */
+#cloud { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ---------- interior pages ---------- */
+
+main {
+  padding: 64px var(--gutter) 0;
+  width: 100%;
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  margin: 0 0 32px;
+}
+
+h2 {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 48px 0 16px;
+}
+
+.section-label {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+  margin: 56px 0 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+
+p { margin: 0 0 20px; max-width: var(--measure); }
+
+.prose strong { color: var(--near); font-weight: 400; }
+.prose a { color: var(--near); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--far); }
+.prose a:hover { text-decoration-color: var(--near); }
+
+.todo {
+  border-left: 2px solid var(--far);
+  padding-left: 14px;
+  color: var(--muted);
+}
+
+/* ---------- project + post lists ---------- */
+
+.entry-list { list-style: none; margin: 0; padding: 0; }
+
+.entry {
+  padding: 24px 0;
+  border-top: 1px solid var(--rule);
+}
+.entry:last-child { border-bottom: 1px solid var(--rule); }
+
+.entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.entry-name {
+  font-size: 15px;
+  color: var(--text);
+}
+.entry-name:hover { color: var(--near); }
+
+.entry-year { font-size: 11px; letter-spacing: .12em; color: var(--muted); margin-left: auto; }
+
+.entry-blurb { margin: 8px 0 0; color: var(--text); max-width: var(--measure); }
+
+.entry-meta {
+  margin-top: 10px;
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 6px;
+  align-items: center;
+  min-height: 1.4em;
+}
+.entry-meta .sep { opacity: .4; }
+.entry-meta .live { color: var(--mid); }
+
+.entry-links { margin-top: 10px; display: flex; gap: 18px; flex-wrap: wrap; }
+.entry-links a {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--near);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--mid);
+  vertical-align: middle;
+}
+.status-archived .status-dot { background: var(--rule); }
+
+.empty { color: var(--muted); padding: 24px 0; border-top: 1px solid var(--rule); }
+
+/* ---------- links page ---------- */
+
+.link-rows { list-style: none; margin: 0; padding: 0; }
+.link-rows li {
+  padding: 18px 0;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.link-rows li:last-child { border-bottom: 1px solid var(--rule); }
+.link-rows .k {
+  font-size: 11px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 92px;
+}
+.link-rows .v a { color: var(--near); }
+
+/* ---------- post body ---------- */
+
+.post-date { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: -20px 0 36px; }
+
+.post-body h2 { font-size: 15px; margin: 40px 0 14px; }
+.post-body h3 { font-size: 14px; font-weight: 500; color: var(--muted); margin: 32px 0 12px; }
+.post-body ul, .post-body ol { max-width: var(--measure); padding-left: 22px; margin: 0 0 20px; }
+.post-body li { margin-bottom: 8px; }
+.post-body code {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 12.5px;
+  color: var(--near);
+}
+.post-body pre {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 16px 18px;
+  overflow-x: auto;
+  max-width: var(--measure);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.post-body pre code { background: none; border: 0; padding: 0; color: var(--text); }
+.post-body blockquote {
+  margin: 0 0 20px;
+  padding-left: 16px;
+  border-left: 2px solid var(--far);
+  color: var(--muted);
+  max-width: var(--measure);
+}
+.post-body hr { border: 0; border-top: 1px solid var(--rule); margin: 40px 0; }
+
+.back-link { display: inline-block; margin-top: 56px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 640px) {
+  :root { --gutter: 20px; }
+  main { padding-top: 44px; }
+  h1 { font-size: 22px; }
+  .entry-year { margin-left: 0; width: 100%; }
+  .link-rows .k { min-width: 0; width: 100%; }
+}

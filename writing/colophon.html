@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the suits are drawn &mdash; Jun Horkan</title>
+<meta name="description" content="The homepage draws four card suits as rotating clouds of ASCII characters. Here is the whole pipeline, which is shorter than it looks.">
+<meta property="og:title" content="How the suits are drawn">
+<meta property="og:description" content="The homepage draws four card suits as rotating clouds of ASCII characters. Here is the whole pipeline, which is shorter than it looks.">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0c'/><text x='16' y='22' font-family='monospace' font-size='16' font-weight='700' fill='%237dd3fc' text-anchor='middle'>J</text></svg>">
+<link rel="stylesheet" href="../assets/css/site.css?v=8">
+</head>
+<body data-page="writing" data-root="../">
+  <main class="prose post-body">
+    <h1>How the suits are drawn</h1>
+    <p class="post-date">Sep 18, 2026</p>
+    <p>There are no images on the homepage. The four card suits in the middle are a few thousand characters painted onto a canvas, and they are genuinely three-dimensional — they rotate, each has a front face and a back face, and the characters shade from white to near-black as the surface recedes. Here is how it is put together.</p>
+    <h2>Start with text, not artwork</h2>
+    <p>Most ASCII-art effects begin with an image file. This one begins with the glyphs themselves. An offscreen canvas draws <code>♠ ♥ ♦ ♣</code> at 400px, and then the pixels are read straight back out:</p>
+    <pre><code>const px = c.getImageData(0, 0, off.width, off.height).data;
+    const on = px[(y * off.width + x) * 4 + 3] &gt; 60;</code></pre>
+    <p>That fourth byte is the alpha channel. Anything more than a third opaque counts as ink. Sampling that on a grid gives a coarse boolean bitmap of all four suits — and because there is no image asset anywhere, changing the shapes is a one-line edit.</p>
+    <p>The suits are laid out two-by-two rather than in a row. That took one non-obvious fix: laying them out on their <em>advance widths</em> and line heights spread them into the corners with a hole in the middle, because a glyph box carries a lot of empty leading. Measuring the actual ink box instead — <code>actualBoundingBoxAscent</code> and friends — and centring each suit&#x27;s ink on its quadrant closed the gap and roughly doubled the usable resolution.</p>
+    <h2>Extrude it</h2>
+    <p>A flat bitmap rotated in 3D looks like a rotating sheet of paper. To get a solid, each filled cell contributes a point at the front of the slab and a point at the back, and cells on the <strong>outline</strong> — any cell missing one of its four neighbours — additionally fill in the wall between the two faces.</p>
+    <p>The inside stays empty. Nothing in the interior is ever visible, so there is no reason to pay for it, and the shapes still read correctly when they turn edge-on.</p>
+    <h2>Scatter, then assemble</h2>
+    <p>On load the cloud does not simply fade in. Every point has a second position, a &quot;scattered&quot; one, computed from its own coordinates:</p>
+    <pre><code>const ring = 9 * Math.round(r / 9);
+    const spoke = Math.round(ang / (Math.PI / 10)) * (Math.PI / 10);</code></pre>
+    <p>Snapping each point&#x27;s radius and angle to quantised rings and spokes produces debris with visible structure — orbits and spokes rather than television static. The hash function is <code>frac(sin(dot(p, magic)))</code>, the old shader trick, so every point&#x27;s jitter is reproducible from its position alone and nothing has to be stored between frames.</p>
+    <p>The intro interpolates from scattered to home over two seconds on an ease-out cubic. That is the entire animation.</p>
+    <h2>Draw it as characters</h2>
+    <p>Each frame rotates the cloud, projects it through a perspective divide, and then does the part that makes it ASCII: a z-buffer at <em>character-cell</em> resolution instead of pixel resolution. The canvas is treated as a grid of 12px cells, and each cell keeps only the nearest point that landed in it.</p>
+    <p>Depth then picks the glyph. The nearest 44% of the depth range draws each particle&#x27;s own suit — the spade in spades, the heart in hearts — and everything further back steps through a density ramp of <code>{ } &lt; &gt; 1 0 ; : ·</code>.</p>
+    <p>One thing worth getting right: normalise depth against the frame&#x27;s <em>actual</em> minimum and maximum, not against a fixed constant. Yaw rotation folds the x extent into z, so a fixed range wastes most of the ramp and the whole thing collapses into two or three glyphs. Measuring per frame keeps the gradient spread across its full span.</p>
+    <p>Colour is greyscale, white at the front to near-black at the back, with each suit sitting on a slightly different slice of the ramp so four overlapping clouds stay legible as four shapes. There is no glow and no shadow anywhere; contrast alone carries the 3D read.</p>
+    <h2>The unglamorous half</h2>
+    <p>The parts that actually decide whether it feels good:</p>
+    <ul>
+      <li>The backing store is scaled by <code>devicePixelRatio</code>, or the characters are mud</li>
+    </ul>
+    <p>on a retina screen.</p>
+    <ul>
+      <li>The canvas is positioned absolutely rather than sized with <code>height: 100%</code>.</li>
+    </ul>
+    <p>A canvas with an auto height falls back to its own width/height attributes — which this script sets from the measured box — and the two chase each other.</p>
+    <ul>
+      <li>The loop stops on <code>visibilitychange</code>. A background tab burning a core to</li>
+    </ul>
+    <p>animate something nobody is looking at is indefensible.</p>
+    <ul>
+      <li><code>prefers-reduced-motion</code> skips the intro and the rotation entirely and paints</li>
+    </ul>
+    <p>one static assembled frame. The shapes still read.</p>
+    <ul>
+      <li>On touch devices the hover response is dropped and the cells get bigger,</li>
+    </ul>
+    <p>because there is no cursor and there is less GPU.</p>
+    <p>The whole thing is about 400 lines with no dependencies, and you can read it in <code>assets/js/ascii.js</code>.</p>
+    <a class="back-link" href="../writing.html">&larr; All writing</a>
+  </main>
+  <script src="../assets/js/nav.js?v=8"></script>
+</body>
+</html>
