@@ -69,9 +69,12 @@ Kept here deliberately — each was a course correction worth remembering.
 ## File layout
 
 ```
-index.html              the whole site: hero + all four sections
+index.html              the whole site: hero + all three sections
 404.html
-plan.md                 this document
+README.md               orientation for anyone opening the repo
+favicon.ico
+assets/img/og.png       link-preview image (1200x630)
+DESIGN.md               this document
 data/projects.json      curated project entries — the file Jun edits most
 assets/css/site.css     single stylesheet, design tokens on :root
 assets/js/ascii.js      the point-cloud hero (~420 lines, no dependencies)
