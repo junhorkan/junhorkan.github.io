@@ -371,8 +371,9 @@ main > .band:first-child { padding-top: var(--gutter); }
 
 @media (max-width: 640px) {
   :root { --gutter: 20px; --head-clear: 104px; }
-  /* The header wraps to two rows on narrow screens, so anchors need more
-     clearance here, not less. */
+  /* Kept generous: the header is a single row at three nav items, but wraps to
+     two if a section is ever added, and an anchor landing under it is worse
+     than a little extra whitespace above a heading. */
   .band { padding-top: 72px; scroll-margin-top: 94px; }
   .band-title { font-size: 23px; }
   .entry-name { font-size: 17px; }

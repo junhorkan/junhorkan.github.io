@@ -12,9 +12,8 @@ const SECTIONS = [
   ['contact', 'Contact'],
 ];
 
-// Split so the address isn't sitting in the HTML as one scrapable string.
-const MAIL_USER = 'junhorkan';
-const MAIL_HOST = 'gmail.com';
+const GITHUB_URL = 'https://github.com/junhorkan';
+const LINKEDIN_URL = 'https://www.linkedin.com/in/jun-horkan-048a1a284/';
 
 const root = document.body.dataset.root || './';
 const page = document.body.dataset.page || '';
@@ -36,9 +35,10 @@ function sep() {
   return f;
 }
 
-function mailLink(text) {
-  const a = el('a', null, text || MAIL_USER + '@' + MAIL_HOST);
-  a.href = 'mailto:' + MAIL_USER + '@' + MAIL_HOST;
+function extLink(text, href) {
+  const a = el('a', null, text);
+  a.href = href;
+  a.rel = 'me noopener';
   return a;
 }
 
@@ -68,14 +68,9 @@ function buildFooter() {
   const foot = el('footer', 'site-foot');
   foot.appendChild(el('span', 'nowrap', 'Jun Horkan'));
   foot.appendChild(sep());
-  foot.appendChild(mailLink());
+  foot.appendChild(extLink('GitHub', GITHUB_URL));
   foot.appendChild(sep());
-
-  const gh = el('a', null, 'GitHub');
-  gh.href = 'https://github.com/junhorkan';
-  gh.rel = 'me noopener';
-  foot.appendChild(gh);
-
+  foot.appendChild(extLink('LinkedIn', LINKEDIN_URL));
   foot.appendChild(sep());
   foot.appendChild(el('span', 'nowrap', '© ' + new Date().getFullYear()));
   return foot;
@@ -132,7 +127,3 @@ if (onIndex) {
   initScrollSpy([...header.querySelectorAll('.site-nav a')]);
 }
 
-// The contact section asks for the address inline too.
-for (const slot of document.querySelectorAll('[data-mail-slot]')) {
-  slot.replaceChildren(mailLink());
-}

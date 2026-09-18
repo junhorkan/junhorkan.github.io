@@ -62,6 +62,7 @@ Kept here deliberately — each was a course correction worth remembering.
 | 18 | Stack renders as **pills**, not an inline run | Taken from the reference site's own `/projects` page. It was the single biggest de-clutter — the eye can skip the row entirely |
 | 19 | Live GitHub language dropped from the stats row | Once the stack became pills, printing the language again read as "2026 · Rust · Rust" |
 | 20 | **Writing section removed** | Jun's call. The `#writing` band, its nav entry, `posts/` (the Markdown pipeline and the colophon post) and `writing/` all went with it — a build script and an orphan post page that nothing links to are dead weight. All recoverable from git history at `d79ea6b` |
+| 21 | **Email removed, LinkedIn added** | Jun's call before publishing. The address is gone from the footer, the contact rows and the About copy; `nav.js` lost its `mailto:` assembly entirely. LinkedIn is now the primary contact |
 
 ---
 
@@ -110,9 +111,7 @@ what stopped the rows reading as clutter.
 
 `nav.js` injects the header and footer on every page, so there is one place to edit them.
 The header is `position: fixed` and persists down the page, over a gradient backdrop so the
-hero can run underneath it. A scroll cue sits at the bottom of `#stage`. The footer email is
-assembled in JS from split user/host strings, so it is not sitting in the HTML as one
-scrapable address — it is still published in plaintext in the footer and in Contact.
+hero can run underneath it. A scroll cue sits at the bottom of `#stage`. The footer carries GitHub and LinkedIn.
 
 ## 2. The ASCII hero — `assets/js/ascii.js`
 
@@ -209,8 +208,8 @@ reorders newest-first. Layout is a list, not a card grid.
 ## 4. About / Contact
 
 The `#about` band is three short paragraphs plus a dated **Now** line. `#contact` lists the
-email (JS-assembled `mailto:`) and GitHub, with commented-out rows for LinkedIn and X
-awaiting handles. The footer also publishes the email in plaintext.
+LinkedIn and GitHub, with a commented-out row for X awaiting a handle. No email address
+appears anywhere on the site.
 
 ---
 
@@ -251,5 +250,5 @@ Analytics, a CMS, a contact form, light mode, a custom domain.
 
 ## Open items for Jun
 
-1. Add LinkedIn / X handles in the Contact rows in `index.html` (they are commented out) when those exist.
+1. Add an X handle to the Contact rows in `index.html` if you want one (the row is commented out).
 2. Update the About **Now** line when the current work changes.
