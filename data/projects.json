@@ -4,7 +4,7 @@
     {
       "name": "got-poker",
       "repo": "junhorkan/got-poker",
-      "blurb": "TODO — a sentence or two on what this does and why you built it. Rust poker engine: hand evaluation, betting rounds, whatever the interesting part turned out to be.",
+      "blurb": "A Rust GTO engine for preflop and postflop decisions: hand evaluation, range and equity, pot odds, and a discounted CFR preflop solver. Ships a terminal lookup for 6–9 players that returns bet sizing and the mix of call, raise, and fold.",
       "stack": ["Rust"],
       "year": "2026",
       "status": "active",
@@ -14,7 +14,7 @@
     {
       "name": "prizepicks-scraper",
       "repo": "junhorkan/prizepicks-scraper",
-      "blurb": "TODO — what it scrapes, what you do with the data, and the part that was harder than expected.",
+      "blurb": "A Python pipeline for PrizePicks CS2 projections. An Apify actor does the scrape; this repo handles the API, normalization, caching, and an optional join with BallDontLie player history for exploratory scoring.",
       "stack": ["Python"],
       "year": "2026",
       "status": "active",
@@ -24,7 +24,7 @@
     {
       "name": "yahtzee",
       "repo": "junhorkan/yahtzee",
-      "blurb": "TODO — the game, plus whatever you were actually exploring underneath it (scoring logic, optimal play, a CLI you liked building).",
+      "blurb": "A single-player desktop Yahtzee in Python with Zelle graphics. Three rolls a turn, click-to-hold dice, and a live scorecard across the 13 categories with the 35-point upper bonus at 63.",
       "stack": ["Python"],
       "year": "2026",
       "status": "active",

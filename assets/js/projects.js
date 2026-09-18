@@ -1,5 +1,6 @@
 // Projects list: curated entries from data/projects.json render immediately,
-// then a single GitHub request overlays live language / stars / last-pushed.
+// then a single GitHub request overlays live stars / last-pushed and re-sorts
+// by recency.
 //
 // The curated list is the source of truth. If GitHub is rate-limited (60/hr
 // unauthenticated) or unreachable, the page looks the same minus the live
@@ -76,8 +77,6 @@ function applyStats(repos) {
 
     const live = el('span', 'live');
     const bits = [];
-    // The language is deliberately absent: it is already a pill in the stack
-    // column, and printing it here read as "2026 · Rust · Rust".
     if (r.stargazers_count > 0) bits.push('★ ' + r.stargazers_count);
     if (r.pushed_at) {
       const d = new Date(r.pushed_at);
@@ -89,10 +88,15 @@ function applyStats(repos) {
     if (meta.children.length) meta.appendChild(sep());
     meta.appendChild(live);
 
-    // Sort key: real recency, when we have it.
     const li = meta.closest('.entry');
     if (li && r.pushed_at) li.dataset.pushed = r.pushed_at;
   }
+}
+
+function reorderByPushed() {
+  const items = [...mount.children];
+  items.sort((a, b) => (b.dataset.pushed || '').localeCompare(a.dataset.pushed || ''));
+  mount.append(...items);
 }
 
 function cached() {
@@ -119,8 +123,8 @@ async function fetchRepos(user) {
   );
   if (!res.ok) throw new Error('github ' + res.status);
   const repos = (await res.json()).map(
-    ({ name, language, stargazers_count, pushed_at, description }) =>
-      ({ name, language, stargazers_count, pushed_at, description })
+    ({ name, stargazers_count, pushed_at }) =>
+      ({ name, stargazers_count, pushed_at })
   );
   cache(repos);
   return repos;
@@ -151,6 +155,7 @@ async function main() {
   // Live stats are a bonus layer; a failure here leaves the curated page intact.
   try {
     applyStats(await fetchRepos(data.githubUser || 'junhorkan'));
+    reorderByPushed();
   } catch (err) {
     console.info('GitHub stats unavailable:', err.message);
   }

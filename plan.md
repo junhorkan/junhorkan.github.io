@@ -1,7 +1,7 @@
 # Jun Horkan — personal site · design document
 
-**Status:** built and verified locally. Not yet deployed.
-**Last updated:** 2026-09-18 (writing section removed)
+**Status:** built locally. Content filled in. Deploy is a GitHub user site (`junhorkan.github.io`).
+**Last updated:** 2026-09-18 (content, leftovers, live recency sort)
 
 ---
 
@@ -91,7 +91,7 @@ Tokens on `:root`; no light mode (the site is dark by design).
 --rule #26262c --near #7dd3fc      --mid #3b82f6    --far #1e3a8a
 --ascii-near #a8e0ff  --ascii-mid #3f7fe8  --ascii-far #1b3b86   (read by ascii.js)
 --page 1060px  --measure 62ch  --split (0.85fr 2fr)  --split-gap 56px
---mono "Berkeley Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace
+--mono "SF Mono", ui-monospace, Menlo, Consolas, monospace
 ```
 
 Everything monospace. Nav and small labels are uppercase, `letter-spacing: .14em`, 11–12px.
@@ -110,8 +110,9 @@ what stopped the rows reading as clutter.
 
 `nav.js` injects the header and footer on every page, so there is one place to edit them.
 The header is `position: fixed` and persists down the page, over a gradient backdrop so the
-hero can run underneath it. The footer email is assembled in JS from split user/host strings,
-so it is not sitting in the HTML as one scrapable address.
+hero can run underneath it. A scroll cue sits at the bottom of `#stage`. The footer email is
+assembled in JS from split user/host strings, so it is not sitting in the HTML as one
+scrapable address — it is still published in plaintext in the footer and in Contact.
 
 ## 2. The ASCII hero — `assets/js/ascii.js`
 
@@ -155,10 +156,10 @@ Sizing and hygiene, all of which were needed in practice:
 
 ## 2b. The scrolling layout — `index.html` + `nav.js`
 
-The site is one document. `index.html` holds `#stage` (the hero, a full `100svh`) followed by
-three `<section class="band">` elements: `#projects`, `#about`, `#contact`. The nav
-links are plain `#id` anchors, and `scroll-behavior: smooth` on `:root` does the animation —
-turned off under `prefers-reduced-motion`.
+The site is one document. `index.html` holds `#stage` (the hero, a full `100svh`, with a
+scroll cue to `#projects`) followed by three `<section class="band">` elements: `#projects`,
+`#about`, `#contact`. The nav links are plain `#id` anchors, and `scroll-behavior: smooth` on
+`:root` does the animation — turned off under `prefers-reduced-motion`.
 
 Anchors land correctly because each band carries `scroll-margin-top` (84px desktop, 94px
 mobile where the header wraps to two rows), which is the one thing a fixed header always
@@ -177,15 +178,15 @@ further. It reads geometry directly in a passive `scroll` listener — four
 ## 3. Projects — `data/projects.json` + `assets/js/projects.js`
 
 Curated entries render immediately; **one** `GET /users/junhorkan/repos?per_page=100` then
-overlays `language`, `stargazers_count` and `pushed_at`, matched by repo name. One request,
-not one per project — unauthenticated GitHub allows 60/hr per IP.
+overlays `stargazers_count` and `pushed_at`, matched by repo name, and re-sorts the list by
+live recency. One request, not one per project — unauthenticated GitHub allows 60/hr per IP.
 
 The curated list is the source of truth. If the request 403s (rate limit) or the user is
 offline, the page renders identically minus the live stats — no spinner, no error banner,
-just a `console.info`. The response is cached in `sessionStorage` for 10 minutes.
+just a `console.info`. Order then stays at the curated featured-then-year sort. The response
+is cached in `sessionStorage` for 10 minutes.
 
-The live language is suppressed when the curated `stack` already names it, or every
-single-language repo reads `RUST · RUST · UPDATED SEP 2026`.
+Live language is not shown. It already sits in the stack pills.
 
 Entry shape:
 
@@ -202,13 +203,14 @@ Entry shape:
 }
 ```
 
-Featured entries sort first, then by year. Layout is a list, not a card grid.
+Featured entries sort first, then by year, until live `pushed_at` arrives — then the list
+reorders newest-first. Layout is a list, not a card grid.
 
 ## 4. About / Contact
 
-The `#about` band carries clearly-marked placeholder copy for Jun to replace — structure, not
-an invented biography. `#contact` lists the email (JS-assembled `mailto:`) and GitHub, with
-commented-out rows for LinkedIn and X awaiting handles.
+The `#about` band is three short paragraphs plus a dated **Now** line. `#contact` lists the
+email (JS-assembled `mailto:`) and GitHub, with commented-out rows for LinkedIn and X
+awaiting handles. The footer also publishes the email in plaintext.
 
 ---
 
@@ -219,7 +221,7 @@ commented-out rows for LinkedIn and X awaiting handles.
 | Hero intro: disperse → assemble → rotate | Passes; console clean |
 | Hero at 375px | No clipping, no horizontal overflow (`scrollWidth === clientWidth`) |
 | `prefers-reduced-motion` | Ink present, pixel-identical across 1.5s, **0** rAF calls in one second |
-| Projects, happy path | Live language / date on all three repos, no duplication |
+| Projects, happy path | Live date on all three repos, list re-sorted by `pushed_at`, no language duplication |
 | Projects, GitHub unreachable | Full curated list renders; no spinner, no error banner |
 | All pages + 404 | Render in the shell, nav active state correct |
 | Anchor jumps, desktop | All land at exactly 84px, clearing the 71px header |
@@ -239,9 +241,9 @@ python3 -m http.server 4173
 
 ## Deploy
 
-Not yet done. GitHub Pages serves this as-is with `.nojekyll`. `gh` is **not** installed on
-this machine, so the repo needs creating either via `brew install gh` or by hand in the
-browser. Publishing is outward-facing and awaits Jun's go-ahead.
+GitHub Pages user site: `junhorkan.github.io`. `404.html` uses root-absolute `/assets/` and
+`data-root="/"`, which is correct for a user site (and would break on a project site).
+`.nojekyll` is in the repo. Bump `?v=N` on deploy when CSS/JS changes.
 
 ## Out of scope
 
@@ -249,7 +251,5 @@ Analytics, a CMS, a contact form, light mode, a custom domain.
 
 ## Open items for Jun
 
-1. Replace the `TODO` blurbs in `data/projects.json` with real descriptions.
-2. Replace the placeholder copy in `about.html`.
-3. Add LinkedIn / X handles to `contact.html` (rows are commented out).
-4. Confirm the footer should publish the email address in plain text.
+1. Add LinkedIn / X handles in the Contact rows in `index.html` (they are commented out) when those exist.
+2. Update the About **Now** line when the current work changes.
