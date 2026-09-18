@@ -240,9 +240,36 @@ python3 -m http.server 4173
 
 ## Deploy
 
-GitHub Pages user site: `junhorkan.github.io`. `404.html` uses root-absolute `/assets/` and
-`data-root="/"`, which is correct for a user site (and would break on a project site).
-`.nojekyll` is in the repo. Bump `?v=N` on deploy when CSS/JS changes.
+Live at **https://junhorkan.github.io**, served by GitHub Pages from `main` at the repo root.
+
+The repo is `junhorkan/junhorkan.github.io` — a Pages *user site*, so pushing `main` is the
+deploy. There is no separate publish step and no build to run.
+
+```bash
+git add -A && git commit -m "what changed" && git push
+```
+
+Two things that were not obvious when setting this up:
+
+- **Pages did not enable itself.** A `<user>.github.io` repo is widely assumed to turn Pages
+  on automatically; it did not. It had to be switched on explicitly (Settings → Pages, or
+  `POST /repos/{owner}/{repo}/pages` with source `main` / `/`). The first build then took
+  about 65 seconds.
+- **Asset versioning matters here.** Pages sets a cache header, so bump the `?v=N` on the
+  stylesheet and script tags in `index.html` and `404.html` whenever CSS or JS changes, or
+  returning visitors keep the old copy.
+
+`/favicon.ico` returns 404 — the icon is a `data:` URI in a `<link rel="icon">`, which drives
+the tab icon correctly, but browsers still probe the legacy path. Cosmetic; add a real file at
+the root to silence it.
+
+### Custom domain
+
+`junhorkan.com` appeared unregistered. To use it: register it, point four `A` records at
+GitHub's Pages IPs (and a `www` `CNAME` at `junhorkan.github.io`), then set the custom domain
+in Settings → Pages — in that order. Setting it first makes `junhorkan.github.io` redirect to
+a domain that does not resolve yet. GitHub commits a `CNAME` file to the repo when you save
+it, so `git pull` before the next push.
 
 ## Out of scope
 
